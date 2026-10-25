@@ -1,0 +1,29 @@
+name: Compilar mod
+on:
+  workflow_dispatch:
+  push:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Descomprimir proyecto
+        run: unzip -q granjas-proyecto.zip -d proyecto
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.14.3'
+      - name: Compilar
+        working-directory: proyecto
+        run: gradle build --no-daemon --stacktrace
+      - name: Publicar el jar
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_number }}
+          name: Granjas mod ${{ github.run_number }}
+          files: proyecto/build/libs/*.jar
